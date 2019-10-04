@@ -18,40 +18,65 @@
 		<!--<div class="alert well-sm { messageClass }">{ message } <span if="{ pageCount > 0 && downloadDisabled }">{ pageCount } URLs already processed.</span></div>-->
 	</div>
 
-	<div class="card" if="{ stats }">
-		<h4>Sitemap Stats</h4>
-		<table>
-			<tr>
-				<td>Sitemap URL count:</td>
-				<td>{ stats.SitemapURLCount }</td>
-			</tr>
-			<tr if="{ hasToken() }">
-				<td>Sitemap image count:</td>
-				<td>{ stats.SitemapImageCount }</td>
-			</tr>
-			<tr if="{ hasToken() }">
-				<td>Sitemap video count:</td>
-				<td>{ stats.SitemapVideoCount }</td>
-			</tr>
-		</table>
-		<h4>Crawl Stats</h4>
-		<table>
-			<tr>
-				<td>Crawled URLs count:</td>
-				<td>{ stats.CrawledResourcesCount }</td>
-			</tr>
-			<tr>
-				<td>Dead URLs count:</td>
-				<td>{ stats.DeadResourcesCount }</td>
-			</tr>
-			<tr>
-				<td>Timed out URLs count:</td>
-				<td>{ stats.TimedOutResourcesCount }</td>
-			</tr>
-		</table>
-
-		<p></p>
-		<p><i>Want to find out more about the dead and timed out URLs? Have a look at my <a href="https://www.marcobeierer.com/joomla-extensions/link-checker">Link Checker</a> for Joomla.</i></p>
+	<div class="row">
+		<div if="{ stats }" class="col-lg-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Sitemap Stats</div>
+				<table class="table table-bordered">
+					<tr>
+						<td>Sitemap URL count</td>
+						<td class="text-right" style="width: 200px;">{ stats.SitemapURLCount }</td>
+					</tr>
+					<tr if="{ hasToken() }">
+						<td>Sitemap image count</td>
+						<td class="text-right">{ stats.SitemapImageCount }</td>
+					</tr>
+					<tr if="{ hasToken() }">
+						<td>Sitemap video count</td>
+						<td class="text-right">{ stats.SitemapVideoCount }</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div if="{ stats }" class="col-lg-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Crawl Stats</div>
+				<table class="table table-bordered">
+					<tr>
+						<td>Crawled URLs count</td>
+						<td class="text-right" style="width: 200px;">{ stats.CrawledResourcesCount }</td>
+					</tr>
+					<tr>
+						<td>Dead URLs count</td>
+						<td class="text-right">{ stats.DeadResourcesCount }</td>
+					</tr>
+					<tr>
+						<td>Timed out URLs count</td>
+						<td class="text-right">{ stats.TimedOutResourcesCount }</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<i>Want to find out more about the dead and timed out URLs? Have a look at my <a href="https://www.marcobeierer.com/tools/link-checker" target="_blank">Link Checker</a>.</i>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Settings</div>
+				<table class="table table-bordered">
+					<tr>
+						<td>Token activated</td>
+						<td class="text-right" style="width: 200px;">{ bool2text(hasToken()) }</td>
+					</tr>
+					<tr>
+						<td>Concurrent fetchers</td>
+						<td class="text-right">{ maxFetchers() }</td>
+					</tr>
+				</table>
+			</div>
+		</div>
 	</div>
 
 	<script>
@@ -234,7 +259,6 @@
 						self.generateDisabled = false;
 
 						if (xhr.getResponseHeader('X-Limit-Reached') == 1) {
-
 							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalURL + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
 						}
 						else {
@@ -315,5 +339,11 @@
 			}
 		}
 
+		self.bool2text = function(val) {
+			if (val) {
+				return 'Yes';
+			}
+			return 'No';
+		}
 	</script>
 </sitemap-generator>
