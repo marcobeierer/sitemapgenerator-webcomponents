@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Sitemap Generator</title>
+
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="author" href="https://plus.google.com/112536883708940935370">
+
+		<link rel="stylesheet" href="https://www.marcobeierer.com/assets/css/template.css">
+		<link rel="shortcut icon" type="image/x-icon" href="https://www.marcobeierer.com/assets/favicon.ico">
+	</head>
+	<body>
+		<div class="navbar navbar-inverse navbar-static-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="">Sitemap Generator</a>
+				</div>
+
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="https://www.marcobeierer.com">By Marco Beierer</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		
+		<div class="container-fluid" style="margin-top: 20px;">
+			<sitemap-generator
+				website-url="https://www.marcobeierer.com"
+				dev="1"
+				></sitemap-generator>
+
+		</div>
+
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<script src="raw.tag" type="riot/tag"></script>
+		<script src="message.tag" type="riot/tag"></script>
+		<script src="sitemap-generator.tag.html" type="riot/tag"></script>
+		<script src="libs-dev/riot+compiler.js"></script>
+
+		<!--
+		<script src="libs/jquery.serialize-object.min.js"></script>
+		<script src="libs/tab.js"></script>
+		<script src="libs/tooltip.js"></script>
+		<script src="libs/dropdown.modified.js"></script>
+		<script src="functions.js"></script>
+
+		<script src="raw.tag" type="riot/tag"></script>
+		<script src="message.tag" type="riot/tag"></script>
+		<script src="result.tag" type="riot/tag"></script>
+		<script src="result-row.tag" type="riot/tag"></script>
+		<script src="resulttable.tag" type="riot/tag"></script>
+		<script src="feedback.tag" type="riot/tag"></script>
+		<script src="datatable.tag" type="riot/tag"></script>
+		<script src="linkchecker.tag" type="riot/tag"></script>
+		<script src="linkchecker-form.tag" type="riot/tag"></script>
+		<script src="linkchecker-scheduler.tag" type="riot/tag"></script>
+		<script src="pricing.tag" type="riot/tag"></script>
+		<script src="libs/lscache.js"></script>
+		<script src="libs/localforage.js"></script>
+		<script src="libs/pako.js"></script>
+		-->
+
+		<script>
+			riot.mount('*');
+		</script>
+	</body>
+</html>
