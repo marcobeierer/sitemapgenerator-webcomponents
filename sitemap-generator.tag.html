@@ -8,7 +8,7 @@
 					<button type="submit" class="btn { generateClass }" onclick="{ generate }" disabled="{ generateDisabled }">Sitemap generieren</button>
 				</span>
 				<!-- TODO does it work? href and onclick are set -->
-				<a class="btn { downloadClass }" onclick="download()" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">Download</a>
+				<a class="btn { downloadClass }" onclick="{ download }" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">Download</a>
 			</div>
 		</form>
 
@@ -90,9 +90,6 @@
 		self.sitemapGeneratorBlob;
 		self.href;
 
-		self.generateClass = opts.btnPrimaryClass;
-		self.downloadClass = opts.btnDefaultClass;
-
 		// partly shared with link checker
 		self.websiteURL64 = function() {
 			var url64 = window.btoa(encodeURIComponent(opts.websiteUrl).replace(/%([0-9A-F]{2})/g, function(match, p1) {
@@ -123,6 +120,12 @@
 		self.systemName = function() {
 			return opts.systemName || 'Unknown';
 		}
+		self.btnPrimaryClass = function() {
+			return opts.btnPrimaryClass || 'btn-primary';
+		}
+		self.btnDefaultClass = function() {
+			return opts.btnDefaultClass || 'btn-default';
+		}
 
 		self.maxFetchers = function() {
 			return opts.maxFetchers || 3;
@@ -146,6 +149,11 @@
 		self.setMessage = function(text, type, name) {
 			self.events.trigger('set-message', text, type, name);
 		};
+
+		self.on('before-mount', function() {
+			self.generateClass = self.btnPrimaryClass();
+			self.downloadClass = self.btnDefaultClass();
+		});
 
 		self.on('mount', function() {
 			// TODO not sure why timeout is necessary to show the message; some conc issue?
@@ -196,8 +204,8 @@
 			var isGeneratingMessage = 'The sitemap is being generated. Please wait a moment.';
 			self.setMessage(isGeneratingMessage, 'warning');
 
-			self.generateClass = opts.btnPrimaryClass;
-			self.downloadClass = opts.btnDefaultClass;
+			self.generateClass = self.btnPrimaryClass();
+			self.downloadClass = self.btnDefaultClass();
 
 			self.retries = 0;
 			
@@ -219,7 +227,6 @@
 					self.retries = 0;
 
 					if (xhr.getResponseHeader('Content-Type').startsWith('application/xml')) {
-
 						self.sitemapGeneratorBlob = new Blob([ data ], { type : 'application/xml' });
 						self.href = (window.URL || window.webkitURL).createObjectURL(self.sitemapGeneratorBlob);
 
@@ -239,8 +246,8 @@
 							self.stats = JSON.parse(xhr.getResponseHeader('X-Stats'));
 						}
 
-						self.generateClass = opts.btnDefaultClass;
-						self.downloadClass = opts.btnPrimaryClass;
+						self.generateClass = self.btnDefaultClass();
+						self.downloadClass = self.btnPrimaryClass();
 					}
 					else {
 						self.pageCount = data.page_count;
@@ -301,7 +308,7 @@
 		}
 
 		self.download = function(e) {
-			e.preventDefault();
+			// important that no e.preventDefault(), otherwise it wouldn't work because href is used/set for all browser except IE 11, which uses the following code
 
 			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) { 
 				window.navigator.msSaveOrOpenBlob(self.sitemapGeneratorBlob, 'sitemap.xml');
