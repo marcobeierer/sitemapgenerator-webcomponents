@@ -210,7 +210,7 @@
 
 			var proxyURL = opts.proxyURL;
 
-			if (opts.systemName == 'Joomla') {
+			if (self.systemName() == 'Joomla') {
 				proxyURL += '&base64url=' + self.websiteURL64() + '&identifier=' + self.identifier();
 			}
 
@@ -262,8 +262,12 @@
 							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalURL + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
 						}
 						else {
-							// TODO check if systemName is set
-							self.setMessage('The generation of the sitemap was successful. The sitemap was saved as sitemap.xml in the ' + opts.systemName + ' root folder. Please see the stats below.', 'success');
+							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';
+							if (['WordPress', 'Joomla'].includes(self.systemName())) {
+								message = 'The generation of the sitemap was successful. The sitemap was saved as sitemap.xml in the ' + self.systemName() + ' root folder. Please see the stats below.';
+
+							}
+							self.setMessage(message, 'success');
 						}
 
 						if (xhr.getResponseHeader('X-Stats') != null) {
