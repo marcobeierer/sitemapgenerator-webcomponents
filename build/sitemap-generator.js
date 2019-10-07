@@ -1,111 +1,11 @@
 'use strict';
 
-<sitemap-generator>
-	<div id="sitemap-widget">
-		<form name="sitemapForm">
-			<div class="input-group">
-				<span class="input-group-btn">
-					<button type="submit" class="btn { generateClass }" onclick="{ generate }" disabled="{ generateDisabled }">Sitemap generieren</button>
-				</span>
-				<!-- TODO does it work? href and onclick are set -->
-				<a class="btn { downloadClass }" onclick="{ download }" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">Download</a>
-			</div>
-		</form>
+riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapForm"> <div class="input-group"> <span class="input-group-btn"> <button type="submit" class="btn {generateClass}" onclick="{generate}" disabled="{generateDisabled}">Sitemap generieren</button> </span> <a class="btn {downloadClass}" onclick="{download}" disabled="{downloadDisabled}" download="sitemap.xml" href="{href}">Download</a> </div> </form> <message plugin="{events}" text="Sitemap Generator is initializing, please wait a moment." type="warning"></message> </div> <div class="row"> <div if="{stats}" class="col-lg-6"> <div class="panel panel-default"> <div class="panel-heading">Sitemap Stats</div> <table class="table table-bordered"> <tr> <td>Sitemap URL count</td> <td class="text-right" style="width: 200px;">{stats.SitemapURLCount}</td> </tr> <tr if="{hasToken()}"> <td>Sitemap image count</td> <td class="text-right">{stats.SitemapImageCount}</td> </tr> <tr if="{hasToken()}"> <td>Sitemap video count</td> <td class="text-right">{stats.SitemapVideoCount}</td> </tr> </table> </div> </div> <div if="{stats}" class="col-lg-6"> <div class="panel panel-default"> <div class="panel-heading">Crawl Stats</div> <table class="table table-bordered"> <tr> <td>Crawled URLs count</td> <td class="text-right" style="width: 200px;">{stats.CrawledResourcesCount}</td> </tr> <tr> <td>Dead URLs count</td> <td class="text-right">{stats.DeadResourcesCount}</td> </tr> <tr> <td>Timed out URLs count</td> <td class="text-right">{stats.TimedOutResourcesCount}</td> </tr> <tr> <td colspan="2"> <i>Want to find out more about the dead and timed out URLs? Have a look at my <a href="https://www.marcobeierer.com/tools/link-checker" target="_blank">Link Checker</a>.</i> </td> </tr> </table> </div> </div> <div class="col-lg-6"> <div class="panel panel-default"> <div class="panel-heading">Settings</div> <table class="table table-bordered"> <tr> <td>Token activated</td> <td class="text-right" style="width: 200px;">{bool2text(hasToken())}</td> </tr> <tr> <td>Concurrent fetchers</td> <td class="text-right">{maxFetchers()}</td> </tr> </table> </div> </div> </div>', '', '', function(opts) {
 
-		<message plugin="{ events }" text="Sitemap Generator is initializing, please wait a moment." type="warning" />
-
-		<!-- TODO or <p>? -->
-		<!--<div class="alert well-sm { messageClass }">{ message } <span if="{ pageCount > 0 && downloadDisabled }">{ pageCount } URLs already processed.</span></div>-->
-	</div>
-
-	<div class="row">
-		<div if="{ stats }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">Sitemap Stats</div>
-				<table class="table table-bordered">
-					<tr>
-						<td>Sitemap URL count</td>
-						<td class="text-right" style="width: 200px;">{ stats.SitemapURLCount }</td>
-					</tr>
-					<tr if="{ hasToken() }">
-						<td>Sitemap image count</td>
-						<td class="text-right">{ stats.SitemapImageCount }</td>
-					</tr>
-					<tr if="{ hasToken() }">
-						<td>Sitemap video count</td>
-						<td class="text-right">{ stats.SitemapVideoCount }</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<div if="{ stats }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">Crawl Stats</div>
-				<table class="table table-bordered">
-					<tr>
-						<td>Crawled URLs count</td>
-						<td class="text-right" style="width: 200px;">{ stats.CrawledResourcesCount }</td>
-					</tr>
-					<tr>
-						<td>Dead URLs count</td>
-						<td class="text-right">{ stats.DeadResourcesCount }</td>
-					</tr>
-					<tr>
-						<td>Timed out URLs count</td>
-						<td class="text-right">{ stats.TimedOutResourcesCount }</td>
-					</tr>
-					<tr>
-						<td colspan="2">
-							<i>Want find out more about the dead and timed out URLs? Have a look at my <a href="https://www.marcobeierer.com/tools/link-checker" target="_blank">Link Checker</a>.</i>
-						</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<div class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">Settings</div>
-				<table class="table table-bordered">
-					<tr>
-						<td>Token activated</td>
-						<td class="text-right" style="width: 200px;">{ bool2text(hasToken()) }</td>
-					</tr>
-					<tr>
-						<td>Concurrent fetchers</td>
-						<td class="text-right">{ maxFetchers() }</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
-
-	<script>
-		// TODO translation (can be copied from online version)
-		// TODO add piwik tracking; general or just for online version?
 
 		var self = this;
 
 		self.events = riot.observable();
-
-		/* TODO work directly with opts so that no remount is necessary on opts change? just not nice for documentation
-			TODO or all dynamic as functions? thus set default value or do preprocessing in function
-		self.websiteURL = opts.websiteUrl;
-		self.token = opts.token;
-
-		self.ignoreEmbeddedContent = opts.ignoreEmbeddedContent;
-		self.referenceCountThreshold = opts.referenceCountThreshold;
-		self.queryParamsToRemove = opts.queryParamsToRemove;
-		self.disableCookies = opts.disableCookies;
-		self.enableIndexFile = opts.enableIndexFile;
-
-		self.maxFetchers = opts.maxFetchers;
-
-		self.systemName = opts.systemName;
-		self.proxyURL = opts.proxyURL;
-		self.professionalURL = opts.professionalURL;
-		self.btnPrimaryClass = opts.btnPrimaryClass;
-		self.btnDefaultClass = opts.btnDefaultClass;
-		*/
 
 		self.downloadDisabled = true;
 		self.generateDisabled = false;
@@ -115,29 +15,26 @@
 		self.sitemapGeneratorBlob;
 		self.href;
 
-		// partly shared with link checker
 		self.websiteURL64 = function() {
 			var url64 = window.btoa(encodeURIComponent(opts.websiteUrl).replace(/%([0-9A-F]{2})/g, function(match, p1) {
 				return String.fromCharCode('0x' + p1);
 			}));
-			url64.replace(/\+/g, '-').replace(/\//g, '_'); // convert to base64 url encoding
+			url64.replace(/\+/g, '-').replace(/\//g, '_');
 
 			return url64;
 		}
 
-		// partly shared with link checker (setToken)
 		self.token = function() {
 			if (opts.token) {
-				return opts.token.replace(/\s/g, ''); // remove all whitespace (space, breakes, tabs)
+				return opts.token.replace(/\s/g, '');
 			}
 			return opts.token;
 		}
 
 		self.hasToken = function() {
-			return ![undefined, null, ''].includes(self.token()); // || (self.data.Stats != undefined && self.data.Stats.TokenUsed);
+			return ![undefined, null, ''].includes(self.token());
 		}
-	
-		// used for joomla multi lang support
+
 		self.identifier = function() {
 			return opts.identifier || '';
 		}
@@ -181,16 +78,14 @@
 		});
 
 		self.on('mount', function() {
-			// TODO not sure why timeout is necessary to show the message; some conc issue?
-			// TODO if not done, initializing is shown until the generation is started
+
 			setTimeout(function() {
 				self.setMessage('The generation of the sitemap was not started yet.', 'info');
 			}, 500);
 		});
 
-		// TODO apply options to url (query) 
 		self.apiserverURL = function() {
-			// TODO also use query on proxy URLs? currently not handled because params are set directly in proxy
+
 			if (!opts.proxyURL) {
 				var query = '';
 				query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
@@ -217,7 +112,6 @@
 			return proxyURL;
 		}
 
-		// TODO how to pass params
 		self.generate = function(e) {
 			e.preventDefault();
 
@@ -233,7 +127,7 @@
 			self.downloadClass = self.btnDefaultClass();
 
 			self.retries = 0;
-			
+
 			var doRequest = function() {
 				var tokenHeader = '';
 				if (self.hasToken()) {
@@ -251,8 +145,8 @@
 				done(function(data, statusText, xhr) {
 					self.retries = 0;
 
-					if (xhr.getResponseHeader('Content-Type').startsWith('application/xml') || xhr.getResponseHeader('Content-Type').startsWith('text/xml')) {
-						self.sitemapGeneratorBlob = new Blob([ xhr.responseText ], { type : 'application/xml' });
+					if (xhr.getResponseHeader('Content-Type').startsWith('application/xml')) {
+						self.sitemapGeneratorBlob = new Blob([ data ], { type : 'application/xml' });
 						self.href = (window.URL || window.webkitURL).createObjectURL(self.sitemapGeneratorBlob);
 
 						self.downloadDisabled = false;
@@ -295,9 +189,9 @@
 
 					self.generateDisabled = false;
 
-					if (status == 401) { // unauthorized
+					if (status == 401) {
 						self.setMessage('The validation of your token failed. The token is invalid or has expired. Please try it again or contact me if the token should be valid.', 'danger');
-					} 
+					}
 					else if (status == 500) {
 						if (xhr.getResponseHeader('X-Write-Error') == 1) {
 							self.setMessage('Could not write sitemap to file. The reason for that could be a permission issue or that not enough space is available.', 'danger');
@@ -306,10 +200,10 @@
 						} else {
 							self.setMessage('The generation of your sitemap failed. Please try it again.', 'danger');
 						}
-					} 
+					}
 					else if (status == 503) {
 						self.setMessage('The backend server is temporarily unavailable. Please try it again later.');
-					} 
+					}
 					else if (status == 504 && xhr.getResponseHeader('X-CURL-Error') == 1) {
 						var message = xhr.responseJSON;
 						if (message == '') {
@@ -317,14 +211,14 @@
 						} else {
 							self.setMessage('A cURL error occurred with the error message:<br/><strong>' + message + '</strong>.', 'danger');
 						}
-					} 
-					else if (status == 0 && self.retries < 3) { // statusCode 0 means that the request was not sent or no response was received
+					}
+					else if (status == 0 && self.retries < 3) {
 						self.retries++;
 						setTimeout(doRequest, 1000);
 
 						self.update();
 						return;
-					} 
+					}
 					else {
 						self.setMessage('The generation of your sitemap failed. Please try it again or contact the developer of the extensions.', 'danger');
 					}
@@ -336,9 +230,8 @@
 		}
 
 		self.download = function(e) {
-			// important that no e.preventDefault(), otherwise it wouldn't work because href is used/set for all browser except IE 11, which uses the following code
 
-			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) { 
+			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) {
 				window.navigator.msSaveOrOpenBlob(self.sitemapGeneratorBlob, 'sitemap.xml');
 			}
 		}
@@ -349,5 +242,4 @@
 			}
 			return 'No';
 		}
-	</script>
-</sitemap-generator>
+});
