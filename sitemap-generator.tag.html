@@ -3,10 +3,8 @@
 <sitemap-generator>
 	<div id="sitemap-widget">
 		<form name="sitemapForm">
-			<div class="input-group">
-				<span class="input-group-btn">
-					<button type="submit" class="btn { generateClass }" onclick="{ generate }" disabled="{ generateDisabled }">Sitemap generieren</button>
-				</span>
+			<div class="btn-group" role="group">
+				<button type="submit" class="btn { generateClass }" onclick="{ generate }" disabled="{ generateDisabled }">Sitemap generieren</button>
 				<!-- TODO does it work? href and onclick are set -->
 				<a class="btn { downloadClass }" onclick="{ download }" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">Download</a>
 			</div>
