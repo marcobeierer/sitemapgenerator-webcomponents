@@ -22,7 +22,7 @@ release for joomla and wordpress?
 	- Hosted sitemaps (pro only).
 	- Download function to redownload sitemap from last run (pro only).
 	- Stop generation process.
-- UI
+- Usability
 	- Autoresume without an extra click when already running.
 
 ### 1.0.0

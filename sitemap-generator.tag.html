@@ -38,6 +38,22 @@
 				</table>
 			</div>
 		</div>
+		<div if="{ stats && hasToken() }" class="col-lg-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Download Last Sitemap and Index Files</div>
+				<table class="table table-bordered">
+					<tr>
+						<td><a href="{ apiserverURL('/sitemap.xml'); }">sitemap.xml</a></td>
+					</tr>
+					<tr each="{ subSitemap in subSitemaps() }">
+						<td><a href="{ apiserverURL('/' + subSitemap) }">{ subSitemap }</a></td>
+					</tr>
+					<!--<tr>
+						<td><em>Please note that downloadable sitemaps are public and can theoretically be downloaded by anybody who knows the URL. If this is a problem for you, please send me an email.</em></td>
+					</tr>-->
+				</table>
+			</div>
+		</div>
 		<div if="{ stats }" class="col-lg-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">Crawl Stats</div>
@@ -230,21 +246,30 @@
 			}
 
 			// TODO also use query on proxy URLs? currently not handled because params are set directly in proxy
+			// also use direct URL for all endpoints because we only need the proxy for downloading and saving the XML file
 			if (!opts.proxyURL || endpoint != '') {
-				var query = '';
-				query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
-				query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
-				query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
-				query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
-				query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
-				query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
-				query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
+				var urlSuffix = '';
 
-				if (opts.dev) {
-					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + endpoint + '?pdfs=1' + query;
+				if (endpoint != '') {
+					urlSuffix = endpoint; // don't set query params
+				} else {
+					var query = '?pdfs=1';
+					query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
+					query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
+					query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
+					query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
+					query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
+					query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
+					query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
+
+					urlSuffix = query;
 				}
 
-				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + endpoint + '?pdfs=1' + query;
+				if (opts.dev) {
+					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + urlSuffix;
+				}
+
+				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + urlSuffix;
 			}
 
 			var proxyURL = opts.proxyURL;
@@ -439,6 +464,27 @@
 				return 'Yes';
 			}
 			return 'No';
+		}
+
+		self.subSitemaps = function() {
+			var subSitemaps = [];
+
+			if (!self.stats) {
+				return subSitemaps;
+			}
+
+			var nulls = '';
+
+			for (var i = 0; i < self.stats.SitemapIndexNumberOfDigits; i++) {
+				nulls += '0';
+			}
+
+			for (var i = 0; i < self.stats.SitemapIndexCount; i++) {
+				var indexString = (nulls + i).slice(-self.stats.SitemapIndexNumberOfDigits);
+				subSitemaps.push('sitemap.' + indexString + '.xml');
+			}
+
+			return subSitemaps;
 		}
 	</script>
 </sitemap-generator>
