@@ -4,7 +4,9 @@
 	<div id="sitemap-widget">
 		<form name="sitemapForm">
 			<div class="btn-group" role="group">
-				<button type="submit" class="btn { generateClass }" onclick="{ generate }" disabled="{ generateDisabled }">Sitemap generieren</button>
+				<button type="submit" class="btn { generateClass }" onclick="{ generate }" if="{ !generateDisabled }">Generate sitemap</button>
+				<button class="btn btn-danger" onclick="{ stopGeneration }" if="{ generateDisabled }">Stop generation</button>
+
 				<!-- TODO does it work? href and onclick are set -->
 				<a class="btn { downloadClass }" onclick="{ download }" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">Download</a>
 			</div>
@@ -109,6 +111,7 @@
 		self.generateDisabled = false;
 		self.pageCount = 0;
 		self.stats = null;
+		self.forceStop = false;
 
 		self.sitemapGeneratorBlob;
 		self.href;
@@ -254,7 +257,7 @@
 						self.href = (window.URL || window.webkitURL).createObjectURL(self.sitemapGeneratorBlob);
 
 						self.downloadDisabled = false;
-						self.generateDisabled = false;
+						self.events.trigger('stopped');
 
 						if (xhr.getResponseHeader('X-Limit-Reached') == 1) {
 							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalURL + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
@@ -283,7 +286,11 @@
 							self.setMessage(message, 'warning');
 						}
 
-						setTimeout(doRequest, 1000);
+						if (self.forceStop) {
+							self.stop(self.apiserverURL(), tokenHeader);
+						} else {
+							setTimeout(doRequest, 1000);
+						}
 					}
 
 					self.update();
@@ -291,7 +298,7 @@
 				fail(function(xhr, t, x) {
 					var status = xhr.status;
 
-					self.generateDisabled = false;
+					self.events.trigger('stopped');
 
 					if (status == 401) { // unauthorized
 						self.setMessage('The validation of your token failed. The token is invalid or has expired. Please try it again or contact me if the token should be valid.', 'danger');
@@ -318,7 +325,12 @@
 					} 
 					else if (status == 0 && self.retries < 3) { // statusCode 0 means that the request was not sent or no response was received
 						self.retries++;
-						setTimeout(doRequest, 1000);
+
+						if (self.forceStop) {
+							self.stop(self.apiserverURL(), tokenHeader);
+						} else {
+							setTimeout(doRequest, 1000);
+						}
 
 						self.update();
 						return;
@@ -339,6 +351,37 @@
 			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) { 
 				window.navigator.msSaveOrOpenBlob(self.sitemapGeneratorBlob, 'sitemap.xml');
 			}
+		}
+
+		self.stopGeneration = function(e) {
+			e.preventDefault();
+			self.forceStop = true;
+		}
+
+		self.events.on('stopped', function() {
+			self.generateDisabled = false;
+			self.update();
+		});
+
+		self.stop = function(url, tokenHeader) {
+			self.setMessage("Going to stop the current generation.", 'warning');
+			self.update();
+
+			jQuery.ajax({
+				method: 'DELETE',
+				url: url,
+				headers: {
+					'Authorization': tokenHeader,
+				}
+			}).done(function(data) {
+				self.setMessage("The current generation was stopped successfully.", 'info');
+			}).fail(function(xhr) {
+				self.setMessage("Could not stop the generation because the connection to the server failed.", 'danger');
+			}).always(function() {
+				self.forceStop = false;
+				self.events.trigger('stopped');
+				self.update();
+			});
 		}
 
 		self.bool2text = function(val) {
