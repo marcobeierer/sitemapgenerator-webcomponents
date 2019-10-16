@@ -116,9 +116,13 @@
 		self.sitemapGeneratorBlob;
 		self.href;
 
+		self.websiteURL = function() {
+			return opts.websiteUrl || '';
+		}
+
 		// partly shared with link checker
 		self.websiteURL64 = function() {
-			var url64 = window.btoa(encodeURIComponent(opts.websiteUrl).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+			var url64 = window.btoa(encodeURIComponent(self.websiteURL()).replace(/%([0-9A-F]{2})/g, function(match, p1) {
 				return String.fromCharCode('0x' + p1);
 			}));
 			url64.replace(/\+/g, '-').replace(/\//g, '_'); // convert to base64 url encoding
@@ -182,17 +186,51 @@
 		});
 
 		self.on('mount', function() {
-			// TODO not sure why timeout is necessary to show the message; some conc issue?
-			// TODO if not done, initializing is shown until the generation is started
-			setTimeout(function() {
-				self.setMessage('The generation of the sitemap was not started yet.', 'info');
-			}, 500);
+			// check if currently running and it should be resumed
+			if (self.websiteURL() != '') {
+				var tokenHeader = '';
+				if (self.hasToken()) {
+					tokenHeader = 'BEARER ' + self.token();
+				}
+
+				var url64 = self.websiteURL64();
+				var url = self.apiserverURL('/running');
+
+				jQuery.ajax({
+					method: 'GET',
+					url: url,
+					headers: {
+						'Authorization': tokenHeader,
+						'Cache-Control': 'no-store',
+					}
+				}).done(function(data, textStatus, xhr) {
+					if (data.Running) {
+						self.generate(); // resume
+					} else {
+						self.setMessage('The Sitemap Generator was not started yet.', 'info');
+					}
+				})
+				.fail(function(xhr) {
+					self.setMessage('The Sitemap Generator was not started yet.', 'info');
+				});
+			} else {
+				// TODO not sure why timeout is necessary to show the message; some conc issue?
+				// TODO if not done, initializing is shown until the generation is started
+				setTimeout(function() {
+					self.setMessage('The generation of the sitemap was not started yet.', 'info');
+				}, 500);
+			}
 		});
 
 		// TODO apply options to url (query) 
-		self.apiserverURL = function() {
+		// endpoint is for example '/running'
+		self.apiserverURL = function(endpoint) {
+			if (endpoint == undefined) {
+				endpoint = '';
+			}
+
 			// TODO also use query on proxy URLs? currently not handled because params are set directly in proxy
-			if (!opts.proxyURL) {
+			if (!opts.proxyURL || endpoint != '') {
 				var query = '';
 				query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
 				query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
@@ -203,10 +241,10 @@
 				query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
 
 				if (opts.dev) {
-					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + '?pdfs=1' + query;
+					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + endpoint + '?pdfs=1' + query;
 				}
 
-				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + '?pdfs=1' + query;
+				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + endpoint + '?pdfs=1' + query;
 			}
 
 			var proxyURL = opts.proxyURL;
@@ -214,13 +252,25 @@
 			if (self.systemName() == 'Joomla') {
 				proxyURL += '&base64url=' + self.websiteURL64() + '&identifier=' + self.identifier();
 			}
+			/* TODO currently not done because we don't go via proxyURL for such requests (see endpoint != '' above) 
+			if (endpoint != '') {
+				// TODO make this more robust
+				// currently it works because proxyURL is as following:
+				// wordpress: admin-ajax.php?action=sitemap_proxy
+				// joomla: index.php?option=com_sitemapgenerator&task=proxy&format=raw
+				proxyURL += '&endpoint=' + encodeURIComponent(endpoint);
+			}
+			*/
 
 			return proxyURL;
 		}
 
 		// TODO how to pass params
 		self.generate = function(e) {
-			e.preventDefault();
+			// check if called via click or directly from autoresume function
+			if (e) {
+				e.preventDefault();
+			}
 
 			self.downloadDisabled = true;
 			self.generateDisabled = true;
