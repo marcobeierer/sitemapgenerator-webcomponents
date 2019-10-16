@@ -59,6 +59,14 @@
 				<div class="panel-heading">Crawl Stats</div>
 				<table class="table table-bordered">
 					<tr>
+						<td>Started at</td>
+						<td class="text-right" >{ datetime(stats.StartedAt) }</td>
+					</tr>
+					<tr>
+						<td>Finished at</td>
+						<td class="text-right">{ datetime(stats.FinishedAt) }</td>
+					</tr>
+					<tr>
 						<td>Crawled URLs count</td>
 						<td class="text-right" style="width: 200px;">{ stats.CrawledResourcesCount }</td>
 					</tr>
@@ -78,17 +86,29 @@
 				</table>
 			</div>
 		</div>
-		<div class="col-lg-12">
+		<div if="{ stats }" class="col-lg-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">Settings</div>
+				<div class="panel-heading">Setting Stats</div>
 				<table class="table table-bordered">
 					<tr>
-						<td>Token activated</td>
-						<td class="text-right" style="width: 200px;">{ bool2text(hasToken()) }</td>
+						<td>Crawl delay</td>
+						<td class="text-right" style="width: 200px;">{ stats.CrawlDelayInSeconds } seconds</td>
 					</tr>
 					<tr>
 						<td>Concurrent fetchers</td>
-						<td class="text-right">{ maxFetchers() }</td>
+						<td class="text-right">{ stats.MaxFetchers }</td>
+					</tr>
+					<tr>
+						<td>URL limit</td>
+						<td class="text-right">{ stats.URLLimit } URLs</td>
+					</tr>
+					<tr>
+						<td>Limit reached</td>
+						<td class="text-right">{ bool2text(stats.URLLimitReached) }</td>
+					</tr>
+					<tr>
+						<td>Token used</td>
+						<td class="text-right">{ bool2text(stats.TokenUsed) }</td>
 					</tr>
 				</table>
 			</div>
@@ -486,5 +506,14 @@
 
 			return subSitemaps;
 		}
+
+		self.datetime = function(val) {
+			return new Date(val).toLocaleString();
+		}
+
+		self.datetimeAt = function(val) {
+			var datetime = self.datetime(val);
+			return datetime.replace(',', ' at');
+		};
 	</script>
 </sitemap-generator>
