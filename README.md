@@ -28,6 +28,7 @@ release for joomla and wordpress?
 	- Show more detailed stats after generation has finished.
 - Usability
 	- Autoresume without an extra click when already running.
+	- Load stats of last generation process when Sitemap Generator is opened (pro only).
 
 ### 1.0.0
 *Released on 10th October 2019* 
