@@ -21,7 +21,7 @@
 	<div class="row">
 		<div if="{ stats }" class="col-lg-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">Sitemap Stats</div>
+				<div class="panel-heading">Sitemap Stats <span title="Stats for generation process that has finished at { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
 				<table class="table table-bordered">
 					<tr>
 						<td>Sitemap URL count</td>
@@ -40,7 +40,7 @@
 		</div>
 		<div if="{ stats && hasToken() }" class="col-lg-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">Download Last Sitemap and Index Files</div>
+				<div class="panel-heading">Download Last Sitemap (or Index File and Sitemaps) <span title="Downloads for generation process that has finished at { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
 				<table class="table table-bordered">
 					<tr>
 						<td><a href="{ apiserverURL('/sitemap.xml'); }">sitemap.xml</a></td>
@@ -56,16 +56,8 @@
 		</div>
 		<div if="{ stats }" class="col-lg-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">Crawl Stats</div>
+				<div class="panel-heading">Crawl Stats <span title="Stats for generation process that has finished at { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
 				<table class="table table-bordered">
-					<tr>
-						<td>Started at</td>
-						<td class="text-right" >{ datetime(stats.StartedAt) }</td>
-					</tr>
-					<tr>
-						<td>Finished at</td>
-						<td class="text-right">{ datetime(stats.FinishedAt) }</td>
-					</tr>
 					<tr>
 						<td>Crawled URLs count</td>
 						<td class="text-right" style="width: 200px;">{ stats.CrawledResourcesCount }</td>
@@ -79,6 +71,14 @@
 						<td class="text-right">{ stats.TimedOutResourcesCount }</td>
 					</tr>
 					<tr>
+						<td>Started at</td>
+						<td class="text-right" >{ datetime(stats.StartedAt) }</td>
+					</tr>
+					<tr>
+						<td>Finished at</td>
+						<td class="text-right">{ datetime(stats.FinishedAt) }</td>
+					</tr>
+					<tr>
 						<td colspan="2">
 							<i>Want find out more about the dead and timed out URLs? Have a look at my <a href="https://www.marcobeierer.com/tools/link-checker" target="_blank">Link Checker</a>.</i>
 						</td>
@@ -88,7 +88,7 @@
 		</div>
 		<div if="{ stats }" class="col-lg-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">Setting Stats</div>
+				<div class="panel-heading">Setting Stats <span title="Stats for generation process that has finished at { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
 				<table class="table table-bordered">
 					<tr>
 						<td>Crawl delay</td>
@@ -245,6 +245,10 @@
 					} else {
 						self.setMessage('The Sitemap Generator was not started yet.', 'info');
 					}
+
+					if (data.SitemapAvailable) {
+						self.loadDataFromServer();
+					}
 				})
 				.fail(function(xhr) {
 					self.setMessage('The Sitemap Generator was not started yet.', 'info');
@@ -320,7 +324,7 @@
 			self.downloadDisabled = true;
 			self.generateDisabled = true;
 			self.pageCount = 0;
-			self.stats = null;
+			//self.stats = null;
 
 			var isGeneratingMessage = 'The sitemap is being generated. Please wait a moment.';
 			self.setMessage(isGeneratingMessage, 'warning');
@@ -478,6 +482,33 @@
 				self.update();
 			});
 		}
+
+		self.loadDataFromServer = function() {
+			if (!self.hasToken()) {
+				return; // no result backup on server saved if not pro customer
+			}
+			var tokenHeader = 'BEARER ' + self.token();
+
+			var url64 = self.websiteURL64();
+			var url = self.apiserverURL('/stats');
+
+			jQuery.ajax({
+				method: 'GET',
+				url: url,
+				headers: {
+					'Authorization': tokenHeader,
+				}
+			})
+			.done(function(data) {
+				self.stats = data;
+			})
+			.fail(function(xhr) {
+				console.log('fetching saved result failed');
+			})
+			.always(function() {
+				self.update();
+			});
+		};
 
 		self.bool2text = function(val) {
 			if (val) {
