@@ -17,7 +17,7 @@ release for joomla and wordpress?
 	- Hosted sitemaps (pro only).
 
 ### 1.1.0
-*Released on ...*
+*Released on 17th October 2019*
 
 - Features
 	- Split sitemaps into multiple files if more than 50'000 URLs (pro only).
