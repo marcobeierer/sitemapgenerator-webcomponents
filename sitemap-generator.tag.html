@@ -43,10 +43,10 @@
 				<div class="panel-heading">Download Last Sitemap (or Index File and Sitemaps) <span title="Downloads for generation process that has finished at { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
 				<table class="table table-bordered">
 					<tr>
-						<td><a href="{ apiserverURL('/sitemap.xml'); }">sitemap.xml</a></td>
+						<td><a href="{ apiserverURL('/sitemap.xml?download=1'); }">sitemap.xml</a></td>
 					</tr>
 					<tr each="{ subSitemap in subSitemaps() }">
-						<td><a href="{ apiserverURL('/' + subSitemap) }">{ subSitemap }</a></td>
+						<td><a href="{ apiserverURL('/' + subSitemap + '?download=1') }">{ subSitemap }</a></td>
 					</tr>
 					<!--<tr>
 						<td><em>Please note that downloadable sitemaps are public and can theoretically be downloaded by anybody who knows the URL. If this is a problem for you, please send me an email.</em></td>
