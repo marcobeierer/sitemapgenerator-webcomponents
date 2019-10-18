@@ -123,26 +123,6 @@
 
 		self.events = riot.observable();
 
-		/* TODO work directly with opts so that no remount is necessary on opts change? just not nice for documentation
-			TODO or all dynamic as functions? thus set default value or do preprocessing in function
-		self.websiteURL = opts.websiteUrl;
-		self.token = opts.token;
-
-		self.ignoreEmbeddedContent = opts.ignoreEmbeddedContent;
-		self.referenceCountThreshold = opts.referenceCountThreshold;
-		self.queryParamsToRemove = opts.queryParamsToRemove;
-		self.disableCookies = opts.disableCookies;
-		self.enableIndexFile = opts.enableIndexFile;
-
-		self.maxFetchers = opts.maxFetchers;
-
-		self.systemName = opts.systemName;
-		self.proxyURL = opts.proxyURL;
-		self.professionalURL = opts.professionalURL;
-		self.btnPrimaryClass = opts.btnPrimaryClass;
-		self.btnDefaultClass = opts.btnDefaultClass;
-		*/
-
 		self.downloadDisabled = true;
 		self.generateDisabled = false;
 		self.pageCount = 0;
@@ -269,38 +249,51 @@
 				endpoint = '';
 			}
 
-			// TODO also use query on proxy URLs? currently not handled because params are set directly in proxy
+			var urlSuffix = '';
+			var apiserverURL = opts.proxyUrl;
+
 			// also use direct URL for all endpoints because we only need the proxy for downloading and saving the XML file
-			if (!opts.proxyURL || endpoint != '') {
-				var urlSuffix = '';
-
-				if (endpoint != '') {
-					urlSuffix = endpoint; // don't set query params
-				} else {
-					var query = '?pdfs=1';
-					query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
-					query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
-					query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
-					query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
-					query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
-					query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
-					query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
-
-					urlSuffix = query;
-				}
-
+			if (!apiserverURL || endpoint != '') { // no proxy url set or endpoint used
+				// dev needs also be handled in proxy, otherwise if we don't use proxy for dev, it would never be tested
 				if (opts.dev) {
-					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + urlSuffix;
+					apiserverURL = 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64();
+				} else {
+					apiserverURL = 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64();
+				}
+			}
+
+			if (endpoint != '') {
+				urlSuffix = endpoint; // don't set query params
+			} else {
+				var query = '';
+
+				// TODO make this more robust by checking if proxy URL has query params set
+				// the current solution only works because all used proxy URLs (wordpress and joomla) have some query params
+				if (opts.proxyUrl) {
+					query += '&';
+				} else {
+					query += '?';
+				}
+				query += 'pdfs=1';
+
+				query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
+				query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
+				query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
+				query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
+				query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
+				query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
+				query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
+
+				if (opts.proxyUrl) {
+					query += '&base64url=' + self.websiteURL64();
+					if (self.identifier() != '') {
+						query += '&identifier=' + self.identifier();
+					}
 				}
 
-				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + urlSuffix;
+				urlSuffix = query;
 			}
 
-			var proxyURL = opts.proxyURL;
-
-			if (self.systemName() == 'Joomla') {
-				proxyURL += '&base64url=' + self.websiteURL64() + '&identifier=' + self.identifier();
-			}
 			/* TODO currently not done because we don't go via proxyURL for such requests (see endpoint != '' above) 
 			if (endpoint != '') {
 				// TODO make this more robust
@@ -311,7 +304,7 @@
 			}
 			*/
 
-			return proxyURL;
+			return apiserverURL + urlSuffix;
 		}
 
 		// TODO how to pass params
@@ -359,7 +352,7 @@
 						self.events.trigger('stopped');
 
 						if (xhr.getResponseHeader('X-Limit-Reached') == 1) {
-							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalURL + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
+							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalUrl + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
 						}
 						else {
 							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';

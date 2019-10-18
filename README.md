@@ -16,6 +16,12 @@ release for joomla and wordpress?
 - Features
 	- Hosted sitemaps (pro only).
 
+### 1.1.1
+*Released on ... October 2019*
+
+- Bug fix release, especially handling of proxies.
+
+
 ### 1.1.0
 *Released on 17th October 2019*
 

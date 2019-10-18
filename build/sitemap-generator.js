@@ -127,38 +127,49 @@ riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapFor
 				endpoint = '';
 			}
 
-			if (!opts.proxyURL || endpoint != '') {
-				var urlSuffix = '';
+			var urlSuffix = '';
+			var apiserverURL = opts.proxyUrl;
 
-				if (endpoint != '') {
-					urlSuffix = endpoint;
-				} else {
-					var query = '?pdfs=1';
-					query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
-					query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
-					query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
-					query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
-					query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
-					query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
-					query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
-
-					urlSuffix = query;
-				}
+			if (!apiserverURL || endpoint != '') {
 
 				if (opts.dev) {
-					return 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64() + urlSuffix;
+					apiserverURL = 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64();
+				} else {
+					apiserverURL = 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64();
+				}
+			}
+
+			if (endpoint != '') {
+				urlSuffix = endpoint;
+			} else {
+				var query = '';
+
+				if (opts.proxyUrl) {
+					query += '&';
+				} else {
+					query += '?';
+				}
+				query += 'pdfs=1';
+
+				query += '&origin_system=' + encodeURIComponent(self.systemName().toLowerCase());
+				query += '&max_fetchers=' + encodeURIComponent(self.maxFetchers());
+				query += '&ignore_embedded_content=' + encodeURIComponent(self.ignoreEmbeddedContent());
+				query += '&reference_count_threshold=' + encodeURIComponent(self.referenceCountThreshold());
+				query += '&query_params_to_remove=' + encodeURIComponent(self.queryParamsToRemove());
+				query += '&disable_cookies=' + encodeURIComponent(self.disableCookies());
+				query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
+
+				if (opts.proxyUrl) {
+					query += '&base64url=' + self.websiteURL64();
+					if (self.identifier() != '') {
+						query += '&identifier=' + self.identifier();
+					}
 				}
 
-				return 'https://api.marcobeierer.com/sitemap/v2/' + self.websiteURL64() + urlSuffix;
+				urlSuffix = query;
 			}
 
-			var proxyURL = opts.proxyURL;
-
-			if (self.systemName() == 'Joomla') {
-				proxyURL += '&base64url=' + self.websiteURL64() + '&identifier=' + self.identifier();
-			}
-
-			return proxyURL;
+			return apiserverURL + urlSuffix;
 		}
 
 		self.generate = function(e) {
@@ -204,7 +215,7 @@ riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapFor
 						self.events.trigger('stopped');
 
 						if (xhr.getResponseHeader('X-Limit-Reached') == 1) {
-							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalURL + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
+							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalUrl + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
 						}
 						else {
 							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';
