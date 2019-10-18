@@ -72,6 +72,9 @@ riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapFor
 		self.enableIndexFile = function() {
 			return opts.enableIndexFile || '';
 		}
+		self.sitemapFilename = function() {
+			return opts.sitemapFilename || 'sitemap.xml';
+		}
 
 		self.setMessage = function(text, type, name) {
 			self.events.trigger('set-message', text, type, name);
@@ -160,7 +163,7 @@ riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapFor
 				query += '&enable_index_file=' + encodeURIComponent(self.enableIndexFile());
 
 				if (opts.proxyUrl) {
-					query += '&base64url=' + self.websiteURL64();
+					query += '&baseurl64=' + self.websiteURL64();
 					if (self.identifier() != '') {
 						query += '&identifier=' + self.identifier();
 					}
@@ -220,8 +223,7 @@ riot.tag2('sitemap-generator', '<div id="sitemap-widget"> <form name="sitemapFor
 						else {
 							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';
 							if (['WordPress', 'Joomla'].includes(self.systemName())) {
-								message = 'The generation of the sitemap was successful. The sitemap was saved as sitemap.xml in the ' + self.systemName() + ' root folder. Please see the stats below.';
-
+								message = 'The generation of the sitemap was successful. The sitemap was saved as ' + self.sitemapFilename() + ' in the root folder of your ' + self.systemName() + ' instance. Please see the stats below.';
 							}
 							self.setMessage(message, 'success');
 						}
