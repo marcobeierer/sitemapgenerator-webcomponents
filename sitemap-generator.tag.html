@@ -1,7 +1,7 @@
 'use strict';
 
 <sitemap-generator>
-	<div id="sitemap-widget">
+	<div>
 		<form name="sitemapForm">
 			<div class="btn-group" role="group">
 				<button type="submit" class="btn { generateClass }" onclick="{ generate }" if="{ !generateDisabled }">Generate sitemap</button>
@@ -354,19 +354,19 @@
 						self.downloadDisabled = false;
 						self.events.trigger('stopped');
 
-						if (xhr.getResponseHeader('X-Limit-Reached') == 1) {
+						if (xhr.getResponseHeader('X-Stats') != null) {
+							self.stats = JSON.parse(xhr.getResponseHeader('X-Stats'));
+						}
+
+						if (self.stats && self.stats.URLLimitReached) {
 							self.setMessage('The Sitemap Generator reached the URL limit and the generated sitemap probably isn\'t complete. You may buy a token for the <a href="' + opts.professionalUrl + '">Sitemap Generator Professional</a> to crawl up to 50\'000 URLs and create a complete sitemap. Additionally to a higher URL limit, the professional version also adds images and videos to your sitemap.', 'danger');
 						}
 						else {
 							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';
 							if (['WordPress', 'Joomla'].includes(self.systemName())) {
-								message = 'The generation of the sitemap was successful. The sitemap was saved as ' + self.sitemapFilename() + ' in the root folder of your ' + self.systemName() + ' instance. Please see the stats below.';
+								message = 'The generation of the sitemap was successful. The sitemap was saved with the filename ' + self.sitemapFilename() + ' in the root folder of your ' + self.systemName() + ' instance. Please see the stats below.';
 							}
 							self.setMessage(message, 'success');
-						}
-
-						if (xhr.getResponseHeader('X-Stats') != null) {
-							self.stats = JSON.parse(xhr.getResponseHeader('X-Stats'));
 						}
 
 						self.generateClass = self.btnDefaultClass();
