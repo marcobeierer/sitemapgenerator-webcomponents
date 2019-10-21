@@ -10,9 +10,6 @@
 
 release for joomla and wordpress?
 
-## Notes
-- tab.js is included for use with Joomla.
-
 ## Changelog
 
 ### Next Release
