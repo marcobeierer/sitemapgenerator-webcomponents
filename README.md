@@ -21,7 +21,6 @@ release for joomla and wordpress?
 
 - Bug fix release, especially handling of proxies.
 
-
 ### 1.1.0
 *Released on 17th October 2019*
 
