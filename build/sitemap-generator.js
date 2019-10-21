@@ -227,7 +227,7 @@ riot.tag2('sitemap-generator', '<div> <form name="sitemapForm"> <div class="btn-
 						else {
 							var message = 'Your sitemap was generated successfully. You can download the sitemap now.';
 							if (['WordPress', 'Joomla'].includes(self.systemName())) {
-								message = 'The generation of the sitemap was successful. The sitemap was saved as ' + self.sitemapFilename() + ' in the root folder of your ' + self.systemName() + ' instance. Please see the stats below.';
+								message = 'The generation of the sitemap was successful. The sitemap was saved with the filename ' + self.sitemapFilename() + ' in the root folder of your ' + self.systemName() + ' instance. Please see the stats below.';
 							}
 							self.setMessage(message, 'success');
 						}
