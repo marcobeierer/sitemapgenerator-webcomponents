@@ -1,6 +1,6 @@
 'use strict';
 
-riot.tag2('message', '<div if="{text != \'\' && !dismissed}" class="alert alert-{type} {alert-dismissible: dismissible}" riot-style="{style}"> <button if="{dismissible}" type="button" class="close" aria-label="Close"><span aria-hidden="true" onclick="{dismiss}">&times;</span></button> <raw content="{text}"></raw> </div>', '', '', function(opts) {
+riot.tag2('message', '<div if="{text != \'\' && !dismissed}" class="alert alert-{type} {alert-dismissible: dismissible}" riot-style="margin-top:; 15px; {style}"> <button if="{dismissible}" type="button" class="close" aria-label="Close"><span aria-hidden="true" onclick="{dismiss}">&times;</span></button> <raw content="{text}"></raw> </div>', '', '', function(opts) {
 
 
 		var self = this;
