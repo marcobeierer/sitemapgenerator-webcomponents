@@ -1,7 +1,7 @@
 'use strict';
 
 <message>
-	<div if="{ text != '' && !dismissed }" class="alert alert-{ type } { alert-dismissible: dismissible }" style="{ style }">
+	<div if="{ text != '' && !dismissed }" class="alert alert-{ type } { alert-dismissible: dismissible }" style="margin-top:; 15px; { style }">
 		<button if="{ dismissible }" type="button" class="close" aria-label="Close"><span aria-hidden="true" onclick="{ dismiss }">&times;</span></button>
 		<raw content="{ text }" />
 	</div>

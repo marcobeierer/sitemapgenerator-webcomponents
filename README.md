@@ -1,5 +1,13 @@
 # Sitemap Generator
 
+## Development
+
+Run the demo through Vite instead of opening `index.html` directly. The Riot in-browser compiler fetches `.tag` files with XHR, and browsers block those requests from `file://` URLs.
+
+1. Run `npm install`.
+2. Run `npm run dev`.
+3. Open `http://127.0.0.1:5173/`.
+
 ## TODO
 - add tabs
 - download splitted sitemaps

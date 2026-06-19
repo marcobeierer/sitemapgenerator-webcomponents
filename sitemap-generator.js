@@ -1,200 +1,7 @@
 'use strict';
 
-<sitemap-generator>
-	<style>
-		.config-help,
-		.config-help p,
-		.config-help pre {
-			font-size: 14px;
-			line-height: 1.6;
-		}
+riot.tag2('sitemap-generator', '<form name="sitemapForm" onsubmit="{generate}" style="margin-bottom: 20px;"> <div class="form-group" if="{showWebsiteURLInput()}"> <label>{tr(\'WEBSITE_URL_LABEL\')}</label> <input type="url" class="form-control" name="websiteUrl" placeholder="https://example.com" riot-value="{enteredWebsiteURL}" oninput="{setWebsiteURL}" disabled="{generateDisabled}" required> </div> <div class="form-group" if="{showWebsiteURLInput()}"> <label>{tr(\'TOKEN_LABEL\')}</label> <textarea class="form-control" name="token" rows="4" placeholder="{tr(\'TOKEN_DESC\')}" riot-value="{enteredToken}" oninput="{setToken}" disabled="{generateDisabled}"></textarea> </div> <div class="btn-group" role="group"> <button type="submit" class="btn {generateClass}" if="{!generateDisabled}">{tr(\'GENERATE_SITEMAP_BUTTON\')}</button> <button type="button" class="btn btn-danger" onclick="{stopGeneration}" if="{generateDisabled}">{tr(\'STOP_GENERATION_BUTTON\')}</button> <a class="btn {downloadClass}" onclick="{download}" disabled="{downloadDisabled}" download="sitemap.xml" href="{href}">{tr(\'DOWNLOAD_BUTTON\')}</a> </div> </form> <message plugin="{events}" text="{tr(\'INIT_MESSAGE\')}" type="warning"></message> <ul if="{showTabs()}" class="nav nav-tabs" id="tabnav{id}" role="tablist"> <li role="presentation" class="{active: isActiveTab(\'stats\')}"><a href="#stats{id}" aria-controls="stats{id}" role="tab" data-toggle="tab" onclick="{showStatsTab}">{tr(\'STATS_TAB\')}</a></li> <li role="presentation" class="{active: isActiveTab(\'config\')}"><a href="#config{id}" aria-controls="config{id}" role="tab" data-toggle="tab" onclick="{showConfigTab}">{tr(\'CONFIG_TAB\')}</a></li> </ul> <div if="{showTabs()}" class="tab-content"> <div role="tabpanel" class="tab-pane {active: isActiveTab(\'stats\')}" id="stats{id}"> <p if="{!stats}" style="margin-top: 15px;">{tr(\'NO_STATS_MESSAGE\')}</p> <div class="row"> <div if="{stats}" class="col-lg-12"> <div class="panel panel-default"> <div class="panel-heading">{tr(\'SITEMAP_STATS_HEADING\')} <span title="{tr(\'STATS_FINISHED_AT_TITLE\')} {datetime(stats.FinishedAt)}" class="pull-right">{datetime(stats.FinishedAt)}</span></div> <table class="table table-bordered"> <tr> <td>{tr(\'SITEMAP_URL_COUNT\')}</td> <td class="text-right" style="width: 200px;">{stats.SitemapURLCount}</td> </tr> <tr if="{hasToken()}"> <td>{tr(\'SITEMAP_IMAGE_COUNT\')}</td> <td class="text-right">{stats.SitemapImageCount}</td> </tr> <tr if="{hasToken()}"> <td>{tr(\'SITEMAP_VIDEO_COUNT\')}</td> <td class="text-right">{stats.SitemapVideoCount}</td> </tr> </table> </div> </div> <div if="{stats && hasToken()}" class="col-lg-12"> <div class="panel panel-default"> <div class="panel-heading">{tr(\'DOWNLOAD_LAST_SITEMAP_HEADING\')} <span title="{tr(\'DOWNLOADS_FINISHED_AT_TITLE\')} {datetime(stats.FinishedAt)}" class="pull-right">{datetime(stats.FinishedAt)}</span></div> <table class="table table-bordered"> <tr> <td><a href="{apiserverURL(\'/sitemap.xml?download=1\');}">sitemap.xml</a></td> </tr> <tr each="{subSitemap in subSitemaps()}"> <td><a href="{apiserverURL(\'/\' + subSitemap + \'?download=1\')}">{subSitemap}</a></td> </tr> </table> </div> </div> <div if="{stats}" class="col-lg-12"> <div class="panel panel-default"> <div class="panel-heading">{tr(\'CRAWL_STATS_HEADING\')} <span title="{tr(\'STATS_FINISHED_AT_TITLE\')} {datetime(stats.FinishedAt)}" class="pull-right">{datetime(stats.FinishedAt)}</span></div> <table class="table table-bordered"> <tr> <td>{tr(\'CRAWLED_URLS_COUNT\')}</td> <td class="text-right" style="width: 200px;">{stats.CrawledResourcesCount}</td> </tr> <tr> <td>{tr(\'DEAD_URLS_COUNT\')}</td> <td class="text-right">{stats.DeadResourcesCount}</td> </tr> <tr> <td>{tr(\'TIMED_OUT_URLS_COUNT\')}</td> <td class="text-right">{stats.TimedOutResourcesCount}</td> </tr> <tr> <td>{tr(\'STARTED_AT\')}</td> <td class="text-right">{datetime(stats.StartedAt)}</td> </tr> <tr> <td>{tr(\'FINISHED_AT\')}</td> <td class="text-right">{datetime(stats.FinishedAt)}</td> </tr> <tr> <td colspan="2"> <i><raw content="{tr(\'LINK_CHECKER_PROMO\')}"></raw></i> </td> </tr> </table> </div> </div> <div if="{stats}" class="col-lg-12"> <div class="panel panel-default"> <div class="panel-heading">{tr(\'SETTING_STATS_HEADING\')} <span title="{tr(\'STATS_FINISHED_AT_TITLE\')} {datetime(stats.FinishedAt)}" class="pull-right">{datetime(stats.FinishedAt)}</span></div> <table class="table table-bordered"> <tr> <td>{tr(\'CRAWL_DELAY\')}</td> <td class="text-right" style="width: 200px;">{stats.CrawlDelayInSeconds} {tr(\'SECONDS_UNIT\')}</td> </tr> <tr> <td>{tr(\'CONCURRENT_FETCHERS\')}</td> <td class="text-right">{stats.MaxFetchers}</td> </tr> <tr> <td>{tr(\'URL_LIMIT\')}</td> <td class="text-right">{stats.URLLimit} {tr(\'URLS_UNIT\')}</td> </tr> <tr> <td>{tr(\'LIMIT_REACHED\')}</td> <td class="text-right">{bool2text(stats.URLLimitReached)}</td> </tr> <tr> <td>{tr(\'TOKEN_USED\')}</td> <td class="text-right">{bool2text(stats.TokenUsed)}</td> </tr> </table> </div> </div> </div> </div> <div role="tabpanel" class="tab-pane {active: isActiveTab(\'config\')}" id="config{id}"> <div class="help-block config-help" style="margin-top: 15px;"><raw content="{tr(\'CONFIG_DESC\')}"></raw></div> <div class="form-group"> <label>{tr(\'IGNORE_EMBEDDED_CONTENT_LABEL\')}</label> <select class="form-control" name="ignoreEmbeddedContent" riot-value="{configIgnoreEmbeddedContent}" onchange="{setIgnoreEmbeddedContent}" disabled="{generateDisabled}"> <option value="0">{tr(\'NO\')}</option> <option value="1">{tr(\'YES\')}</option> </select> <div class="help-block config-help"><raw content="{tr(\'IGNORE_EMBEDDED_CONTENT_DESC\')}"></raw></div> </div> <div class="form-group"> <label>{tr(\'MAX_FETCHERS_LABEL\')}</label> <input class="form-control" name="maxFetchers" min="1" max="10" step="1" riot-value="{configMaxFetchers}" oninput="{setMaxFetchers}" disabled="{generateDisabled}" type="{\'number\'}"> <div class="help-block config-help"><raw content="{tr(\'MAX_FETCHERS_DESC\')}"></raw></div> </div> <div class="form-group"> <label>{tr(\'REFERENCE_COUNT_THRESHOLD_LABEL\')}</label> <select class="form-control" name="referenceCountThreshold" riot-value="{configReferenceCountThreshold}" onchange="{setReferenceCountThreshold}" disabled="{generateDisabled}"> <option each="{option in referenceCountThresholdOptions}" riot-value="{option.value}">{option.label}</option> </select> <div class="help-block config-help"><raw content="{tr(\'REFERENCE_COUNT_THRESHOLD_DESC\')}"></raw></div> </div> <div class="form-group"> <label>{tr(\'QUERY_PARAMS_TO_REMOVE_LABEL\')}</label> <input type="text" class="form-control" name="queryParamsToRemove" riot-value="{configQueryParamsToRemove}" oninput="{setQueryParamsToRemove}" disabled="{generateDisabled}"> <div class="help-block config-help"><raw content="{tr(\'QUERY_PARAMS_TO_REMOVE_DESC\')}"></raw></div> </div> <div class="form-group"> <label>{tr(\'DISABLE_COOKIES_LABEL\')}</label> <select class="form-control" name="disableCookies" riot-value="{configDisableCookies}" onchange="{setDisableCookies}" disabled="{generateDisabled}"> <option value="0">{tr(\'NO\')}</option> <option value="1">{tr(\'YES\')}</option> </select> <div class="help-block config-help"><raw content="{tr(\'DISABLE_COOKIES_DESC\')}"></raw></div> </div> </div> </div>', 'sitemap-generator .config-help,[data-is="sitemap-generator"] .config-help,sitemap-generator .config-help p,[data-is="sitemap-generator"] .config-help p,sitemap-generator .config-help pre,[data-is="sitemap-generator"] .config-help pre{ font-size: 14px; line-height: 1.6; } sitemap-generator .config-help p,[data-is="sitemap-generator"] .config-help p{ margin: 0 0 5px; } sitemap-generator .config-help pre,[data-is="sitemap-generator"] .config-help pre{ margin: 5px 0 0; } sitemap-generator .config-help p:last-child,[data-is="sitemap-generator"] .config-help p:last-child{ margin-bottom: 0; }', '', function(opts) {
 
-		.config-help p {
-			margin: 0 0 5px;
-		}
-
-		.config-help pre {
-			margin: 5px 0 0;
-		}
-
-		.config-help p:last-child {
-			margin-bottom: 0;
-		}
-	</style>
-
-	<form name="sitemapForm" onsubmit="{ generate }" style="margin-bottom: 20px;">
-		<div class="form-group" if="{ showWebsiteURLInput() }">
-			<label>{ tr('WEBSITE_URL_LABEL') }</label>
-			<input type="url" class="form-control" name="websiteUrl" placeholder="https://example.com" value="{ enteredWebsiteURL }" oninput="{ setWebsiteURL }" disabled="{ generateDisabled }" required>
-		</div>
-		<div class="form-group" if="{ showWebsiteURLInput() }">
-			<label>{ tr('TOKEN_LABEL') }</label>
-			<textarea class="form-control" name="token" rows="4" placeholder="{ tr('TOKEN_DESC') }" value="{ enteredToken }" oninput="{ setToken }" disabled="{ generateDisabled }"></textarea>
-		</div>
-
-		<div class="btn-group" role="group">
-			<button type="submit" class="btn { generateClass }" if="{ !generateDisabled }">{ tr('GENERATE_SITEMAP_BUTTON') }</button>
-			<button type="button" class="btn btn-danger" onclick="{ stopGeneration }" if="{ generateDisabled }">{ tr('STOP_GENERATION_BUTTON') }</button>
-
-			<!-- TODO does it work? href and onclick are set -->
-			<a class="btn { downloadClass }" onclick="{ download }" disabled="{ downloadDisabled }" download="sitemap.xml" href="{ href }">{ tr('DOWNLOAD_BUTTON') }</a>
-		</div>
-	</form>
-
-	<message plugin="{ events }" text="{ tr('INIT_MESSAGE') }" type="warning" />
-
-	<ul if="{ showTabs() }" class="nav nav-tabs" id="tabnav{ id }" role="tablist">
-		<li role="presentation" class="{ active: isActiveTab('stats') }"><a href="#stats{ id }" aria-controls="stats{ id }" role="tab" data-toggle="tab" onclick="{ showStatsTab }">{ tr('STATS_TAB') }</a></li>
-		<li role="presentation" class="{ active: isActiveTab('config') }"><a href="#config{ id }" aria-controls="config{ id }" role="tab" data-toggle="tab" onclick="{ showConfigTab }">{ tr('CONFIG_TAB') }</a></li>
-	</ul>
-
-	<div if="{ showTabs() }" class="tab-content">
-		<div role="tabpanel" class="tab-pane { active: isActiveTab('stats') }" id="stats{ id }">
-			<p if="{ !stats }" style="margin-top: 15px;">{ tr('NO_STATS_MESSAGE') }</p>
-			<div class="row">
-		<div if="{ stats }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">{ tr('SITEMAP_STATS_HEADING') } <span title="{ tr('STATS_FINISHED_AT_TITLE') } { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
-				<table class="table table-bordered">
-					<tr>
-						<td>{ tr('SITEMAP_URL_COUNT') }</td>
-						<td class="text-right" style="width: 200px;">{ stats.SitemapURLCount }</td>
-					</tr>
-					<tr if="{ hasToken() }">
-						<td>{ tr('SITEMAP_IMAGE_COUNT') }</td>
-						<td class="text-right">{ stats.SitemapImageCount }</td>
-					</tr>
-					<tr if="{ hasToken() }">
-						<td>{ tr('SITEMAP_VIDEO_COUNT') }</td>
-						<td class="text-right">{ stats.SitemapVideoCount }</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<div if="{ stats && hasToken() }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">{ tr('DOWNLOAD_LAST_SITEMAP_HEADING') } <span title="{ tr('DOWNLOADS_FINISHED_AT_TITLE') } { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
-				<table class="table table-bordered">
-					<tr>
-						<td><a href="{ apiserverURL('/sitemap.xml?download=1'); }">sitemap.xml</a></td>
-					</tr>
-					<tr each="{ subSitemap in subSitemaps() }">
-						<td><a href="{ apiserverURL('/' + subSitemap + '?download=1') }">{ subSitemap }</a></td>
-					</tr>
-					<!--<tr>
-						<td><em>Please note that downloadable sitemaps are public and can theoretically be downloaded by anybody who knows the URL. If this is a problem for you, please send me an email.</em></td>
-					</tr>-->
-				</table>
-			</div>
-		</div>
-		<div if="{ stats }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">{ tr('CRAWL_STATS_HEADING') } <span title="{ tr('STATS_FINISHED_AT_TITLE') } { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
-				<table class="table table-bordered">
-					<tr>
-						<td>{ tr('CRAWLED_URLS_COUNT') }</td>
-						<td class="text-right" style="width: 200px;">{ stats.CrawledResourcesCount }</td>
-					</tr>
-					<tr>
-						<td>{ tr('DEAD_URLS_COUNT') }</td>
-						<td class="text-right">{ stats.DeadResourcesCount }</td>
-					</tr>
-					<tr>
-						<td>{ tr('TIMED_OUT_URLS_COUNT') }</td>
-						<td class="text-right">{ stats.TimedOutResourcesCount }</td>
-					</tr>
-					<tr>
-						<td>{ tr('STARTED_AT') }</td>
-						<td class="text-right" >{ datetime(stats.StartedAt) }</td>
-					</tr>
-					<tr>
-						<td>{ tr('FINISHED_AT') }</td>
-						<td class="text-right">{ datetime(stats.FinishedAt) }</td>
-					</tr>
-					<tr>
-						<td colspan="2">
-							<i><raw content="{ tr('LINK_CHECKER_PROMO') }" /></i>
-						</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<div if="{ stats }" class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">{ tr('SETTING_STATS_HEADING') } <span title="{ tr('STATS_FINISHED_AT_TITLE') } { datetime(stats.FinishedAt) }" class="pull-right">{ datetime(stats.FinishedAt) }</span></div>
-				<table class="table table-bordered">
-					<tr>
-						<td>{ tr('CRAWL_DELAY') }</td>
-						<td class="text-right" style="width: 200px;">{ stats.CrawlDelayInSeconds } { tr('SECONDS_UNIT') }</td>
-					</tr>
-					<tr>
-						<td>{ tr('CONCURRENT_FETCHERS') }</td>
-						<td class="text-right">{ stats.MaxFetchers }</td>
-					</tr>
-					<tr>
-						<td>{ tr('URL_LIMIT') }</td>
-						<td class="text-right">{ stats.URLLimit } { tr('URLS_UNIT') }</td>
-					</tr>
-					<tr>
-						<td>{ tr('LIMIT_REACHED') }</td>
-						<td class="text-right">{ bool2text(stats.URLLimitReached) }</td>
-					</tr>
-					<tr>
-						<td>{ tr('TOKEN_USED') }</td>
-						<td class="text-right">{ bool2text(stats.TokenUsed) }</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-			</div>
-		</div>
-
-		<div role="tabpanel" class="tab-pane { active: isActiveTab('config') }" id="config{ id }">
-			<div class="help-block config-help" style="margin-top: 15px;"><raw content="{ tr('CONFIG_DESC') }" /></div>
-
-			<div class="form-group">
-				<label>{ tr('IGNORE_EMBEDDED_CONTENT_LABEL') }</label>
-				<select class="form-control" name="ignoreEmbeddedContent" value="{ configIgnoreEmbeddedContent }" onchange="{ setIgnoreEmbeddedContent }" disabled="{ generateDisabled }">
-					<option value="0">{ tr('NO') }</option>
-					<option value="1">{ tr('YES') }</option>
-				</select>
-				<div class="help-block config-help"><raw content="{ tr('IGNORE_EMBEDDED_CONTENT_DESC') }" /></div>
-			</div>
-
-			<div class="form-group">
-				<label>{ tr('MAX_FETCHERS_LABEL') }</label>
-				<input type="number" class="form-control" name="maxFetchers" min="1" max="10" step="1" value="{ configMaxFetchers }" oninput="{ setMaxFetchers }" disabled="{ generateDisabled }">
-				<div class="help-block config-help"><raw content="{ tr('MAX_FETCHERS_DESC') }" /></div>
-			</div>
-
-			<div class="form-group">
-				<label>{ tr('REFERENCE_COUNT_THRESHOLD_LABEL') }</label>
-				<select class="form-control" name="referenceCountThreshold" value="{ configReferenceCountThreshold }" onchange="{ setReferenceCountThreshold }" disabled="{ generateDisabled }">
-					<option each="{ option in referenceCountThresholdOptions }" value="{ option.value }">{ option.label }</option>
-				</select>
-				<div class="help-block config-help"><raw content="{ tr('REFERENCE_COUNT_THRESHOLD_DESC') }" /></div>
-			</div>
-
-			<div class="form-group">
-				<label>{ tr('QUERY_PARAMS_TO_REMOVE_LABEL') }</label>
-				<input type="text" class="form-control" name="queryParamsToRemove" value="{ configQueryParamsToRemove }" oninput="{ setQueryParamsToRemove }" disabled="{ generateDisabled }">
-				<div class="help-block config-help"><raw content="{ tr('QUERY_PARAMS_TO_REMOVE_DESC') }" /></div>
-			</div>
-
-			<div class="form-group">
-				<label>{ tr('DISABLE_COOKIES_LABEL') }</label>
-				<select class="form-control" name="disableCookies" value="{ configDisableCookies }" onchange="{ setDisableCookies }" disabled="{ generateDisabled }">
-					<option value="0">{ tr('NO') }</option>
-					<option value="1">{ tr('YES') }</option>
-				</select>
-				<div class="help-block config-help"><raw content="{ tr('DISABLE_COOKIES_DESC') }" /></div>
-			</div>
-		</div>
-	</div>
-
-	<script>
-		// TODO translation (can be copied from online version)
-		// TODO add piwik tracking; general or just for online version?
 
 		var self = this;
 
@@ -445,31 +252,28 @@
 			return (opts.websiteUrl || self.enteredWebsiteURL || '').trim();
 		}
 
-		// partly shared with link checker
 		self.websiteURL64 = function() {
 			var url64 = window.btoa(encodeURIComponent(self.websiteURL()).replace(/%([0-9A-F]{2})/g, function(match, p1) {
 				return String.fromCharCode('0x' + p1);
 			}));
-			url64.replace(/\+/g, '-').replace(/\//g, '_'); // convert to base64 url encoding
+			url64.replace(/\+/g, '-').replace(/\//g, '_');
 
 			return url64;
 		}
 
-		// partly shared with link checker (setToken)
 		self.token = function() {
 			var token = self.showWebsiteURLInput() ? self.enteredToken : opts.token;
 
 			if (token) {
-				return token.replace(/\s/g, ''); // remove all whitespace (space, breakes, tabs)
+				return token.replace(/\s/g, '');
 			}
 			return token;
 		}
 
 		self.hasToken = function() {
-			return ![undefined, null, ''].includes(self.token()); // || (self.data.Stats != undefined && self.data.Stats.TokenUsed);
+			return ![undefined, null, ''].includes(self.token());
 		}
-	
-		// used for joomla multi lang support
+
 		self.identifier = function() {
 			return opts.identifier || '';
 		}
@@ -516,7 +320,7 @@
 		});
 
 		self.on('mount', function() {
-			// check if currently running and it should be resumed
+
 			if (self.websiteURL() != '') {
 				var tokenHeader = '';
 				if (self.hasToken()) {
@@ -535,7 +339,7 @@
 					}
 				}).done(function(data, textStatus, xhr) {
 					if (data.Running) {
-						self.generate(); // resume
+						self.generate();
 					} else {
 						self.setMessage(self.tr('SITEMAP_GENERATOR_NOT_STARTED'), 'info');
 					}
@@ -548,16 +352,13 @@
 					self.setMessage(self.tr('SITEMAP_GENERATOR_NOT_STARTED'), 'info');
 				});
 			} else {
-				// TODO not sure why timeout is necessary to show the message; some conc issue?
-				// TODO if not done, initializing is shown until the generation is started
+
 				setTimeout(function() {
 					self.setMessage(self.tr('GENERATION_NOT_STARTED'), 'info');
 				}, 500);
 			}
 		});
 
-		// TODO apply options to url (query) 
-		// endpoint is for example '/running'
 		self.apiserverURL = function(endpoint) {
 			if (endpoint == undefined) {
 				endpoint = '';
@@ -566,9 +367,8 @@
 			var urlSuffix = '';
 			var apiserverURL = opts.proxyUrl;
 
-			// also use direct URL for all endpoints because we only need the proxy for downloading and saving the XML file
-			if (!apiserverURL || endpoint != '') { // no proxy url set or endpoint used
-				// dev needs also be handled in proxy, otherwise if we don't use proxy for dev, it would never be tested
+			if (!apiserverURL || endpoint != '') {
+
 				if (opts.dev) {
 					apiserverURL = 'http://marco-desktop:9999/sitemap/v2/' + self.websiteURL64();
 				} else {
@@ -577,12 +377,10 @@
 			}
 
 			if (endpoint != '') {
-				urlSuffix = endpoint; // don't set query params
+				urlSuffix = endpoint;
 			} else {
 				var query = '';
 
-				// TODO make this more robust by checking if proxy URL has query params set
-				// the current solution only works because all used proxy URLs (wordpress and joomla) have some query params
 				if (opts.proxyUrl) {
 					query += '&';
 				} else {
@@ -608,22 +406,11 @@
 				urlSuffix = query;
 			}
 
-			/* TODO currently not done because we don't go via proxyURL for such requests (see endpoint != '' above) 
-			if (endpoint != '') {
-				// TODO make this more robust
-				// currently it works because proxyURL is as following:
-				// wordpress: admin-ajax.php?action=sitemap_proxy
-				// joomla: index.php?option=com_sitemapgenerator&task=proxy&format=raw
-				proxyURL += '&endpoint=' + encodeURIComponent(endpoint);
-			}
-			*/
-
 			return apiserverURL + urlSuffix;
 		}
 
-		// TODO how to pass params
 		self.generate = function(e) {
-			// check if called via click or directly from autoresume function
+
 			if (e) {
 				e.preventDefault();
 			}
@@ -640,7 +427,6 @@
 			self.downloadDisabled = true;
 			self.generateDisabled = true;
 			self.pageCount = 0;
-			//self.stats = null;
 
 			var isGeneratingMessage = self.tr('GENERATION_IN_PROGRESS');
 			self.setMessage(isGeneratingMessage, 'warning');
@@ -649,7 +435,7 @@
 			self.downloadClass = self.btnDefaultClass();
 
 			self.retries = 0;
-			
+
 			var doRequest = function() {
 				var tokenHeader = '';
 				if (self.hasToken()) {
@@ -714,9 +500,9 @@
 
 					self.events.trigger('stopped');
 
-					if (status == 401) { // unauthorized
+					if (status == 401) {
 						self.setMessage(self.tr('TOKEN_INVALID'), 'danger');
-					} 
+					}
 					else if (status == 500) {
 						if (xhr.getResponseHeader('X-Write-Error') == 1) {
 							self.setMessage(self.tr('WRITE_ERROR'), 'danger');
@@ -725,10 +511,10 @@
 						} else {
 							self.setMessage(self.tr('GENERATION_FAILED_TRY_AGAIN'), 'danger');
 						}
-					} 
+					}
 					else if (status == 503) {
 						self.setMessage(self.tr('BACKEND_UNAVAILABLE'));
-					} 
+					}
 					else if (status == 504 && xhr.getResponseHeader('X-CURL-Error') == 1) {
 						var message = xhr.responseJSON;
 						if (message == '') {
@@ -736,8 +522,8 @@
 						} else {
 							self.setMessage(self.trFormat('CURL_ERROR_WITH_MESSAGE', { message: message }), 'danger');
 						}
-					} 
-					else if (status == 0 && self.retries < 3) { // statusCode 0 means that the request was not sent or no response was received
+					}
+					else if (status == 0 && self.retries < 3) {
 						self.retries++;
 
 						if (self.forceStop) {
@@ -748,7 +534,7 @@
 
 						self.update();
 						return;
-					} 
+					}
 					else {
 						self.setMessage(self.tr('GENERATION_FAILED_CONTACT'), 'danger');
 					}
@@ -760,9 +546,8 @@
 		}
 
 		self.download = function(e) {
-			// important that no e.preventDefault(), otherwise it wouldn't work because href is used/set for all browser except IE 11, which uses the following code
 
-			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) { 
+			if (window.navigator.msSaveOrOpenBlob && self.sitemapGeneratorBlob) {
 				window.navigator.msSaveOrOpenBlob(self.sitemapGeneratorBlob, 'sitemap.xml');
 			}
 		}
@@ -800,7 +585,7 @@
 
 		self.loadDataFromServer = function() {
 			if (!self.hasToken()) {
-				return; // no result backup on server saved if not pro customer
+				return;
 			}
 			var tokenHeader = 'BEARER ' + self.token();
 
@@ -861,5 +646,4 @@
 			var datetime = self.datetime(val);
 			return datetime.replace(',', ' at');
 		};
-	</script>
-</sitemap-generator>
+});
