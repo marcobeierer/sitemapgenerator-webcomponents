@@ -198,7 +198,7 @@ riot.tag2('sitemap-generator', '<form name="sitemapForm" onsubmit="{generate}" s
 			return [true, 'true', '1', 1].includes(opts.showTabs);
 		}
 
-		self.activeTab = self.showWebsiteURLInput() ? 'config' : 'stats';
+		self.activeTab = 'stats';
 
 		self.isActiveTab = function(tabName) {
 			return self.activeTab == tabName;
